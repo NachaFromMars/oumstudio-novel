@@ -1,48 +1,37 @@
 # Contributing to OUMStudio-Novel
 
-Cảm ơn bạn quan tâm đến OUMStudio-Novel. Tài liệu này mô tả quy ước đóng góp.
+Cảm ơn bạn quan tâm. Tài liệu này mô tả quy ước đóng góp cho Omni Novel Suite.
 
-## Yêu cầu môi trường
-
-- Go ≥ 1.25
-- Python 3 (cho `oumstudio/oum-prose-verify.py`)
+## Môi trường
+- Go ≥ 1.25 (engine)
+- Node.js (novel-guardian / novel-master)
+- Python 3 (verify scripts)
 
 ## Build & test
-
 ```bash
 go build -o bin/oum-novel ./cmd/ainovel-cli/
 go test ./...
 ```
-
 Mọi PR phải giữ `go test ./...` xanh (hiện 19 package pass).
 
-## Quy ước code
+## Cấu trúc
+- Engine: `cmd/` + `internal/`
+- Assets embed: `assets/`
+- Lớp prose Việt: `oumstudio/`
+- Skill quy trình: `skills/` (mỗi skill có `SKILL.md` riêng)
 
-- Theo `gofmt` / `go vet` chuẩn.
-- Logic engine đặt trong `internal/`; entry point trong `cmd/`.
-- Assets (prompts, references, rules, styles) đặt trong `assets/` và được embed.
-- Lớp prose tiếng Việt đặt trong `oumstudio/`.
-
-## Quy ước prose tiếng Việt (bắt buộc cho nội dung Việt)
-
-- **0 em dash** (—) trong prose.
-- **0 tiếng Anh** lọt vào prose tiếng Việt.
-- **0 markdown** trong văn bản truyện.
-- Tôn trọng 30+ rule liền mạch trong `assets/references/continuity-rules-vi.md`.
-
-Kiểm tra trước khi commit nội dung:
-
+## Quy ước prose tiếng Việt (bắt buộc)
+- 0 em dash (—), 0 tiếng Anh lọt prose, 0 markdown trong văn truyện.
+- Tôn trọng 30+ rule continuity trong `assets/references/continuity-rules-vi.md`.
 ```bash
 python3 oumstudio/oum-prose-verify.py --strict <file>
 ```
 
 ## Pull request
-
-1. Fork + tạo branch `feature/...` hoặc `fix/...`.
-2. Commit nhỏ, message rõ ràng.
-3. Đảm bảo test xanh.
+1. Fork + branch `feature/...` hoặc `fix/...`.
+2. Commit nhỏ, message rõ.
+3. Test xanh.
 4. Mở PR mô tả thay đổi + lý do.
 
 ## License
-
-Đóng góp của bạn sẽ được phát hành dưới [Apache License 2.0](LICENSE).
+Đóng góp được phát hành dưới [Apache License 2.0](LICENSE). Sub-component `skills/novel-guardian/` giữ MIT riêng.
