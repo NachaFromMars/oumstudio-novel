@@ -1,4 +1,4 @@
-OUMStudio-Novel
+OUMStudio-Novel — Omni Novel Suite
 Copyright 2026 Tiểu Tâm × Nấng
 
 This product includes software developed as a derivative work (fork) of:
@@ -10,7 +10,20 @@ This product includes software developed as a derivative work (fork) of:
 The original ainovel-cli is the upstream engine. OUMStudio-Novel adds a
 Vietnamese prose-quality layer (hard gates for em dash / English leakage,
 30+ continuity rules, 9 Vietnamese styles, the Nacharium critique council,
-and premium dark/bright EPUB export) on top of that engine.
+premium dark/bright EPUB export) and bundles a suite of process skills
+(cw-* family, novel-guardian, novel-master, novelcore-ai, forge-novel-guard)
+on top of that engine.
+
+--- Bundled sub-components ---
+
+skills/novel-guardian/ is distributed under its own license (MIT), retained
+in skills/novel-guardian/LICENSE. It is compatible with Apache License 2.0.
+
+All other bundled skills (cw-* family, novel-master, novelcore-ai,
+forge-novel-guard) and the Vietnamese prose-quality layer are
+© Tiểu Tâm × Nấng and released under Apache License 2.0.
+
+--- License ---
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
