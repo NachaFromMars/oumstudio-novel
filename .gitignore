@@ -48,7 +48,8 @@ tasks
 refer/
 output*
 
-# OUMStudio additions
+# Omni suite additions
 /bin/
-__pycache__/
+**/node_modules/
+**/__pycache__/
 *.pyc
