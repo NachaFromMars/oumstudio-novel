@@ -311,6 +311,7 @@ func renderNavXHTML(hasCover bool, chapters []int, titleIdx chapterTitleIndex) s
 func renderOPF(novelName string, hasCover bool, chapters []int) string {
 	bookID := bookIdentifier(novelName)
 	modified := time.Now().UTC().Format("2006-01-02T15:04:05Z")
+	dateOnly := time.Now().UTC().Format("2006-01-02")
 
 	title := strings.TrimSpace(novelName)
 	if title == "" {
@@ -318,6 +319,8 @@ func renderOPF(novelName string, hasCover bool, chapters []int) string {
 	}
 
 	var b strings.Builder
+	// EPUB 3 package. Bổ sung metadata hiện đại theo EPUB 3.3 (W3C Rec 2023): dc:date, generator,
+	// và accessibility metadata (schema.org) — khuyến nghị cho EPUB hiện đại. Tương thích mọi trình đọc 3.x.
 	fmt.Fprintf(&b, `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid" xml:lang="vi">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -325,12 +328,20 @@ func renderOPF(novelName string, hasCover bool, chapters []int) string {
     <dc:title>%s</dc:title>
     <dc:language>vi</dc:language>
     <dc:creator>ainovel-cli</dc:creator>
+    <dc:date>%s</dc:date>
     <meta property="dcterms:modified">%s</meta>
+    <meta name="generator" content="OmniNovel (ainovel-cli fork)"/>
+    <meta property="schema:accessMode">textual</meta>
+    <meta property="schema:accessModeSufficient">textual</meta>
+    <meta property="schema:accessibilityFeature">tableOfContents</meta>
+    <meta property="schema:accessibilityFeature">readingOrder</meta>
+    <meta property="schema:accessibilityHazard">none</meta>
+    <meta property="schema:accessibilitySummary">Truyện văn bản thuần, có mục lục điều hướng, không hình ảnh thiết yếu.</meta>
   </metadata>
   <manifest>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
     <item id="css" href="style.css" media-type="text/css"/>
-`, html.EscapeString(bookID), html.EscapeString(title), modified)
+`, html.EscapeString(bookID), html.EscapeString(title), dateOnly, modified)
 
 	if hasCover {
 		b.WriteString(`    <item id="cover" href="cover.xhtml" media-type="application/xhtml+xml"/>` + "\n")
