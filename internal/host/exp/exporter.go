@@ -132,7 +132,7 @@ func Run(ctx context.Context, deps Deps, opts Options) (*Result, error) {
 	case FormatTXT:
 		data = []byte(renderTXT(progress.NovelName, chapters, titleIdx, locations, bodies))
 	case FormatEPUB:
-		buf, err := renderEPUB(progress.NovelName, chapters, titleIdx, locations, bodies)
+		buf, err := renderEPUB(progress.NovelName, chapters, titleIdx, locations, bodies, opts.Meta)
 		if err != nil {
 			return nil, fmt.Errorf("render EPUB thất bại: %w", err)
 		}
