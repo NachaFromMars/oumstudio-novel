@@ -83,8 +83,13 @@ ng = os.path.join(SKILLS, "novel-guardian", "scripts", "novel-guardian.mjs")
 if os.path.isfile(ng) and have_node:
     gdir = os.path.join(OUTDIR, "guardian")
     os.makedirs(os.path.join(gdir, "chapters"), exist_ok=True)
+    # novel-guardian scanner nhận tên file khớp /(ch|chuong|chương)[._-]?(\d+)/i
+    # → đổi tên chapters/NN.md → chNN.md khi copy
     for f in glob.glob(os.path.join(OUTDIR, "chapters", "*.md")):
-        try: shutil.copy(f, os.path.join(gdir, "chapters", os.path.basename(f)))
+        base = os.path.basename(f)
+        num = "".join(ch for ch in base if ch.isdigit()) or "0"
+        dest = os.path.join(gdir, "chapters", "ch%02d.md" % int(num))
+        try: shutil.copy(f, dest)
         except: pass
     if not os.path.isdir(os.path.join(gdir, "data")):
         run(["node", ng, "init"], cwd=gdir)
@@ -96,7 +101,14 @@ else:
 # --- SKILL 4: novel-master check (5 lớp) ---
 nm = os.path.join(SKILLS, "novel-master", "scripts", "novel-master.mjs")
 if os.path.isfile(nm) and have_node and have_chfile:
-    r = run(["node", nm, "check", "scan", "--project", "omni", "--file", CHFILE])
+    # novel-master cần tên file suy ra được số chương (chNN.md). Tạo bản sao chNN.md tạm.
+    nmtmp = os.path.join(OUTDIR, "meta", "nm-tmp")
+    os.makedirs(nmtmp, exist_ok=True)
+    nmfile = os.path.join(nmtmp, "ch%02d.md" % chn)
+    try: shutil.copy(CHFILE, nmfile)
+    except: nmfile = CHFILE
+    # novel-master: check scan <chapter.md> (positional)
+    r = run(["node", nm, "check", "scan", nmfile, "--project", "omni"])
     results["novel_master_check"] = {"available": True, "exit": r["exit"], "output": r["output"]}
 else:
     results["novel_master_check"] = {"available": False}
