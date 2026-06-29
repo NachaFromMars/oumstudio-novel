@@ -1043,7 +1043,7 @@ func (h *Host) ImportFrom(ctx context.Context, opts imp.Options) (<-chan imp.Eve
 	rulesOpts := rules.DefaultOptions(h.bundle.RulesFS)
 	deps := imp.Deps{
 		Store:      h.store,
-		CommitTool: tools.NewCommitChapterTool(h.store).WithRules(rulesOpts),
+		CommitTool: tools.NewCommitChapterTool(h.store).WithRules(rulesOpts).WithPostCommitHook(h.cfg.PostCommitHook, h.cfg.SkillsDir, h.cfg.OutputDir),
 		LLM:        h.models.ForRole("architect"),
 		Prompts: imp.Prompts{
 			Foundation: h.bundle.Prompts.ImportFoundation,
