@@ -48,7 +48,6 @@ tasks
 refer/
 output*
 
-# Omni suite additions
 /bin/
 **/node_modules/
 **/__pycache__/
