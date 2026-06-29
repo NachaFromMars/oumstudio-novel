@@ -144,6 +144,7 @@ type cliOptions struct {
 	ExportFrom    int    // chương bắt đầu (0 = đầu)
 	ExportTo      int    // chương cuối (0 = cuối)
 	ExportOver    bool   // ghi đè nếu file tồn tại
+	AuditGate     string // OmniNovel: cổng kiểm duyệt audit trước xuất (off/warn/block)
 }
 
 // parseCLIOptions trích xuất các flag CLI, trả về tùy chọn và các tham số còn lại.
@@ -222,6 +223,12 @@ func parseCLIOptions(argv []string) (cliOptions, []string, error) {
 			i++
 		case "--overwrite":
 			opts.ExportOver = true
+		case "--audit-gate":
+			if i+1 >= len(argv) {
+				return opts, nil, fmt.Errorf("--audit-gate thiếu giá trị (off/warn/block)")
+			}
+			i++
+			opts.AuditGate = argv[i]
 		default:
 			args = append(args, argv[i])
 		}
@@ -294,14 +301,25 @@ func runExport(cfg bootstrap.Config, opts cliOptions) error {
 	if err := store.Init(); err != nil {
 		return fmt.Errorf("khởi tạo store: %w", err)
 	}
+	auditGate := opts.AuditGate
+	if auditGate == "" {
+		auditGate = "warn" // OmniNovel: mặc định cảnh báo audit trước xuất (không chặn)
+	}
 	res, err := exp.Run(context.Background(), exp.Deps{Store: store}, exp.Options{
 		OutPath:   opts.Export,
 		From:      opts.ExportFrom,
 		To:        opts.ExportTo,
 		Overwrite: opts.ExportOver,
+		AuditGate: auditGate,
 	})
 	if err != nil {
 		return err
+	}
+	if len(res.AuditWarnings) > 0 {
+		fmt.Printf("🔍 Cổng kiểm duyệt audit — %d cảnh báo:\n", len(res.AuditWarnings))
+		for _, w := range res.AuditWarnings {
+			fmt.Printf("   ⚠️  %s\n", w)
+		}
 	}
 	fmt.Printf("✅ Đã xuất %d chương → %s (%d bytes)\n", res.Chapters, res.Path, res.Bytes)
 	if len(res.Skipped) > 0 {
