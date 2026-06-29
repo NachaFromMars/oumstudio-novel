@@ -3,6 +3,13 @@
 Tất cả thay đổi đáng chú ý của dự án được ghi lại ở đây.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/), tuân theo [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-06-29
+
+### Changed — EPUB metadata lên chuẩn EPUB 3.3 (mới nhất)
+- content.opf bổ sung metadata theo EPUB 3.3 (W3C Rec 2023): dc:date, generator, schema.org accessibility (accessMode/accessModeSufficient/accessibilityFeature/accessibilityHazard/accessibilitySummary).
+- package version="3.0" GIỮ NGUYÊN — đúng spec EPUB 3.3 (version attribute không đổi cho minor versions; EPUB 3.2 valid = EPUB 3.3 valid).
+- Verified: epubcheck 4.2.6 → 0 errors / 0 warnings.
+
 ## [1.3.0] - 2026-06-29
 
 ### Added — Pre-export audit gate (kiểm duyệt trước khi xuất)
