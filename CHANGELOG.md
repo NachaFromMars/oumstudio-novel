@@ -3,6 +3,18 @@
 Tất cả thay đổi đáng chú ý của dự án được ghi lại ở đây.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/), tuân theo [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-06-29
+
+### Added — Pre-export audit gate (kiểm duyệt trước khi xuất)
+- Export giờ ĐỌC báo cáo skill-audit của các chương TRƯỚC khi xuất.
+- Flag `--audit-gate`: `off` (tắt) / `warn` (cảnh báo, mặc định) / `block` (chặn xuất nếu prose lỗi cứng thật).
+- `block` mode: từ chối xuất + liệt kê lý do nếu có chương em dash/tiếng Anh.
+- `warn` mode: in cảnh báo continuity (guardian/master) + prose nhưng vẫn xuất.
+- Fix hook: novel-guardian cần tên chNN.md, novel-master cần file chNN.md positional → cả 4 skill scan đúng.
+
+### Testing
+- 19 package pass. Verified: block chặn chương em dash/tiếng Anh, warn hiện cảnh báo guardian+master trên seed "Người Giữ Giờ".
+
 ## [1.2.0] - 2026-06-29
 
 ### Added — Auto-wired skill pipeline (FULL integration)
