@@ -47,8 +47,3 @@ release-notes.md
 tasks
 refer/
 output*
-
-/bin/
-**/node_modules/
-**/__pycache__/
-*.pyc
