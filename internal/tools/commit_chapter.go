@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -22,6 +25,11 @@ type CommitChapterTool struct {
 	store     *store.Store
 	rulesOpts rules.LoadOptions // Tùy chọn; khi LoadOptions rỗng sẽ không tạo rule_violations
 	proseGate bool             // OUMStudio-Novel: chặn cứng commit khi prose có lỗi error chắc chắn (em dash / tiếng Anh lọt)
+
+	// OmniNovel post-commit hook: chạy SAU KHI commit thành công, audit chương qua toàn bộ skill.
+	postCommitHook string // đường dẫn script; trống = tắt
+	skillsDir      string // thư mục gốc chứa skills/ (truyền cho hook)
+	outputDir      string // thư mục output/novel (truyền cho hook)
 }
 
 func NewCommitChapterTool(store *store.Store) *CommitChapterTool {
@@ -58,6 +66,42 @@ func proseHardErrors(content string, wordCount int) []rules.Violation {
 func (t *CommitChapterTool) WithRules(opts rules.LoadOptions) *CommitChapterTool {
 	t.rulesOpts = opts
 	return t
+}
+
+// WithPostCommitHook (OmniNovel) cấu hình script chạy sau khi commit mỗi chương.
+// hookPath trống = tắt. skillsDir/outputDir truyền xuống hook qua biến môi trường.
+func (t *CommitChapterTool) WithPostCommitHook(hookPath, skillsDir, outputDir string) *CommitChapterTool {
+	t.postCommitHook = hookPath
+	t.skillsDir = skillsDir
+	t.outputDir = outputDir
+	return t
+}
+
+// runPostCommitHook chạy hook OmniNovel sau commit. Best-effort: lỗi chỉ log, không phá pipeline.
+func (t *CommitChapterTool) runPostCommitHook(chapter int) {
+	if t.postCommitHook == "" {
+		return
+	}
+	outDir := t.outputDir
+	if outDir == "" {
+		outDir = t.store.Dir()
+	}
+	chFile := filepath.Join(outDir, fmt.Sprintf("chapters/%02d.md", chapter))
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "bash", t.postCommitHook)
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("OMNI_CHAPTER=%d", chapter),
+		"OMNI_CHAPTER_FILE="+chFile,
+		"OMNI_OUTPUT_DIR="+outDir,
+		"OMNI_SKILLS_DIR="+t.skillsDir,
+	)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		slog.Warn("post-commit hook lỗi (không chặn)", "module", "omni-hook", "chapter", chapter, "err", err, "output", strings.TrimSpace(string(output)))
+		return
+	}
+	slog.Info("post-commit hook xong", "module", "omni-hook", "chapter", chapter, "output", strings.TrimSpace(string(output)))
 }
 
 // commitOutput nhúng thêm trường mở rộng lên trên domain.CommitResult, giữ package domain không phụ thuộc rules.
@@ -378,6 +422,10 @@ func (t *CommitChapterTool) Execute(_ context.Context, args json.RawMessage) (js
 
 	// 11. Kiểm tra quy tắc cơ học (chỉ trả về dữ liệu thực tế, không chặn)
 	violations := t.checkRules(content, wordCount)
+
+	// 12. OmniNovel post-commit hook: audit chương qua toàn bộ skill (best-effort, không chặn).
+	t.runPostCommitHook(a.Chapter)
+
 	return json.Marshal(commitOutput{CommitResult: result, RuleViolations: violations})
 }
 
@@ -499,6 +547,10 @@ func (t *CommitChapterTool) executeRewriteCommit(
 
 	// Giống đường chính: rewrite/polish cũng kiểm tra cơ học và kèm rule_violations
 	violations := t.checkRules(content, wordCount)
+
+	// OmniNovel post-commit hook (rewrite path)
+	t.runPostCommitHook(chapter)
+
 	return json.Marshal(map[string]any{
 		"chapter":         chapter,
 		"rewritten":       true,
