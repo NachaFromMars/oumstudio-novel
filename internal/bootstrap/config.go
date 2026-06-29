@@ -144,6 +144,16 @@ type Config struct {
 
 	// Notify cấu hình cảnh báo không giám sát; mặc định bật (kênh system làm dự phòng).
 	Notify NotifyConfig `json:"notify,omitzero"`
+
+	// PostCommitHook (OmniNovel): đường dẫn script chạy SAU KHI commit mỗi chương thành công.
+	// Khi đặt, engine gọi script với biến môi trường OMNI_CHAPTER / OMNI_CHAPTER_FILE / OMNI_OUTPUT_DIR / OMNI_SKILLS_DIR.
+	// Script audit chương qua toàn bộ skill OmniNovel (oum-prose-verify, novel-guardian, novel-master, forge-novel-guard)
+	// và ghi kết quả vào meta/skill-audit/ch{N}.json. Hook KHÔNG chặn commit (chạy best-effort, lỗi không phá pipeline).
+	// Để trống = tắt hook.
+	PostCommitHook string `json:"post_commit_hook,omitempty"`
+
+	// SkillsDir (OmniNovel): thư mục gốc chứa skills/ để hook tìm script. Trống = hook tự suy ra.
+	SkillsDir string `json:"skills_dir,omitempty"`
 }
 
 // BudgetConfig là tuyên bố chính sách ngân sách của người dùng cho một cuốn sách. Dừng khi vượt giới hạn
