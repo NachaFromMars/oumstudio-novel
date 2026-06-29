@@ -3,6 +3,21 @@
 Tất cả thay đổi đáng chú ý của dự án được ghi lại ở đây.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/), tuân theo [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-06-29
+
+### Added — Front/Back matter chuẩn cho EPUB
+- EPUB export giờ dựng ĐẦY ĐỦ trang chuẩn của một cuốn sách:
+  - Front: cover image + cover text + half-title + title page + copyright + dedication/epigraph + preface
+  - Back: end-of-part + afterword + author bio + series note
+- `BookMeta` struct + `Options.Meta`; CLI flags: `--meta-file` (JSON), `--author`, `--series`, `--subtitle`, `--cover`.
+- Nhúng ảnh bìa thật (png/jpg/webp) qua `--cover` / meta.coverImage → khai báo `properties="cover-image"` (EPUB 3 chuẩn).
+- nav.xhtml + content.opf (manifest/spine) tự cập nhật theo các trang matter.
+- CSS cho toàn bộ trang matter (dark mode aware).
+
+### Verified
+- epubcheck 4.2.6: 0 errors/0 warnings trên EPUB đầy đủ matter + cover image 2.8MB.
+- 26 mục XHTML đúng thứ tự đọc. 19 go test pass.
+
 ## [1.4.0] - 2026-06-29
 
 ### Changed — EPUB metadata lên chuẩn EPUB 3.3 (mới nhất)
