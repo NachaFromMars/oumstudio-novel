@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -145,6 +146,11 @@ type cliOptions struct {
 	ExportTo      int    // chương cuối (0 = cuối)
 	ExportOver    bool   // ghi đè nếu file tồn tại
 	AuditGate     string // OmniNovel: cổng kiểm duyệt audit trước xuất (off/warn/block)
+	MetaFile      string // OmniNovel: đường dẫn JSON chứa BookMeta (front/back matter)
+	Author        string // OmniNovel: tác giả (ghi đè meta)
+	Series        string // OmniNovel: bộ sách (ghi đè meta)
+	Subtitle      string // OmniNovel: phụ đề (ghi đè meta)
+	CoverImage    string // OmniNovel: đường dẫn ảnh bìa (ghi đè meta)
 }
 
 // parseCLIOptions trích xuất các flag CLI, trả về tùy chọn và các tham số còn lại.
@@ -229,6 +235,36 @@ func parseCLIOptions(argv []string) (cliOptions, []string, error) {
 			}
 			i++
 			opts.AuditGate = argv[i]
+		case "--meta-file":
+			if i+1 >= len(argv) {
+				return opts, nil, fmt.Errorf("--meta-file thiếu đường dẫn")
+			}
+			i++
+			opts.MetaFile = argv[i]
+		case "--author":
+			if i+1 >= len(argv) {
+				return opts, nil, fmt.Errorf("--author thiếu giá trị")
+			}
+			i++
+			opts.Author = argv[i]
+		case "--series":
+			if i+1 >= len(argv) {
+				return opts, nil, fmt.Errorf("--series thiếu giá trị")
+			}
+			i++
+			opts.Series = argv[i]
+		case "--subtitle":
+			if i+1 >= len(argv) {
+				return opts, nil, fmt.Errorf("--subtitle thiếu giá trị")
+			}
+			i++
+			opts.Subtitle = argv[i]
+		case "--cover":
+			if i+1 >= len(argv) {
+				return opts, nil, fmt.Errorf("--cover thiếu đường dẫn ảnh")
+			}
+			i++
+			opts.CoverImage = argv[i]
 		default:
 			args = append(args, argv[i])
 		}
@@ -305,12 +341,39 @@ func runExport(cfg bootstrap.Config, opts cliOptions) error {
 	if auditGate == "" {
 		auditGate = "warn" // OmniNovel: mặc định cảnh báo audit trước xuất (không chặn)
 	}
+
+	// OmniNovel: nạp BookMeta cho front/back matter.
+	var meta exp.BookMeta
+	if opts.MetaFile != "" {
+		raw, rerr := os.ReadFile(opts.MetaFile)
+		if rerr != nil {
+			return fmt.Errorf("đọc --meta-file: %w", rerr)
+		}
+		if jerr := json.Unmarshal(raw, &meta); jerr != nil {
+			return fmt.Errorf("--meta-file không phải JSON hợp lệ: %w", jerr)
+		}
+	}
+	// Flag ghi đè meta-file
+	if opts.Author != "" {
+		meta.Author = opts.Author
+	}
+	if opts.Series != "" {
+		meta.Series = opts.Series
+	}
+	if opts.Subtitle != "" {
+		meta.Subtitle = opts.Subtitle
+	}
+	if opts.CoverImage != "" {
+		meta.CoverImage = opts.CoverImage
+	}
+
 	res, err := exp.Run(context.Background(), exp.Deps{Store: store}, exp.Options{
 		OutPath:   opts.Export,
 		From:      opts.ExportFrom,
 		To:        opts.ExportTo,
 		Overwrite: opts.ExportOver,
 		AuditGate: auditGate,
+		Meta:      meta,
 	})
 	if err != nil {
 		return err
