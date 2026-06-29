@@ -126,7 +126,7 @@ func BuildCoordinator(
 		tools.NewDraftChapterTool(store),
 		tools.NewEditChapterTool(store),
 		tools.NewCheckConsistencyTool(store),
-		tools.NewCommitChapterTool(store).WithRules(rulesOpts),
+		tools.NewCommitChapterTool(store).WithRules(rulesOpts).WithPostCommitHook(cfg.PostCommitHook, cfg.SkillsDir, cfg.OutputDir),
 	}
 	editorTools := []agentcore.Tool{
 		contextTool,
