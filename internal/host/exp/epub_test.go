@@ -18,6 +18,7 @@ func TestRenderEPUB_StructuralInvariants(t *testing.T) {
 			1: "# Chương 1 Đêm Mưa\n\nAnh nhìn ra ngoài cửa sổ.\n\nĐoạn hai.",
 			2: "Cô đẩy cửa bước vào.",
 		},
+		BookMeta{},
 	)
 	if err != nil {
 		t.Fatalf("renderEPUB: %v", err)
@@ -132,6 +133,7 @@ func TestRenderEPUB_HTMLEscape(t *testing.T) {
 		chapterTitleIndex{1: "C \"D\""},
 		nil,
 		map[int]string{1: "正文 < & > 内容。"},
+		BookMeta{},
 	)
 	if err != nil {
 		t.Fatalf("renderEPUB: %v", err)
@@ -168,6 +170,7 @@ func TestRenderEPUB_LayeredVolume(t *testing.T) {
 		chapterTitleIndex{1: "A", 2: "B"},
 		locs,
 		map[int]string{1: "正文一。", 2: "正文二。"},
+		BookMeta{},
 	)
 	if err != nil {
 		t.Fatalf("renderEPUB: %v", err)
@@ -201,6 +204,7 @@ func TestRenderEPUB_NoCoverWhenNoTitle(t *testing.T) {
 		chapterTitleIndex{1: "唯一一章"},
 		nil,
 		map[int]string{1: "正文。"},
+		BookMeta{},
 	)
 	if err != nil {
 		t.Fatalf("renderEPUB: %v", err)
