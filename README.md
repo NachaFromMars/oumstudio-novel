@@ -1,80 +1,106 @@
-# OUMStudio-Novel
+# OUMStudio-Novel — Omni Novel Suite
 
-> Engine viết tiểu thuyết dài **autonomous** cho tiếng Việt — multi-agent, store-first, checkpoint-resume, EPUB premium.
+> Bộ công cụ viết tiểu thuyết tiếng Việt **trọn vẹn**: engine autonomous + lớp chất lượng prose Việt + bộ skill quy trình. Một câu yêu cầu → tiểu thuyết hoàn chỉnh, chất lượng văn Việt premium.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://go.dev)
 [![Tests](https://img.shields.io/badge/tests-19_packages_passing-success)](#kiểm-thử)
+[![Skills](https://img.shields.io/badge/novel_skills-11_bundled-orange)](#bộ-skill-novel-tích-hợp)
 [![Status](https://img.shields.io/badge/status-production-brightgreen)](#)
 
-OUMStudio-Novel là một **cỗ máy chạy thật** (binary Go), không phải prompt-guide. Nhập **một câu yêu cầu** → engine tự dựng premise, outline, nhân vật, thế giới → viết từng chương → kiểm tra nhất quán → xuất **EPUB/TXT**. Hỗ trợ tiểu thuyết rất dài qua checkpoint resume, can thiệp realtime, và import truyện cũ để viết tiếp.
+OUMStudio-Novel hợp nhất **hai hướng** thành một bộ duy nhất:
 
-Engine là một **fork tiếng Việt** của [`voocel/ainovel-cli`](https://github.com/voocel/ainovel-cli), được nâng cấp với một lớp chất lượng prose tiếng Việt premium: cổng chặn cứng (0 em dash / 0 tiếng Anh), 30+ rule liền mạch, 9 style Việt, và hội đồng phê bình Nacharium.
+1. **Engine autonomous** (Go, multi-agent) — *cỗ máy chạy thật*: nhập 1 câu → tự gọi tools, tự viết, tự checkpoint, tự xuất sách. Fork tiếng Việt của [`voocel/ainovel-cli`](https://github.com/voocel/ainovel-cli).
+2. **Bộ skill chất lượng** — *quy trình kiểm soát*: continuity 30+ rule, văn phong Việt, hội đồng phê bình, EPUB premium, brainstorm/critique/wiki.
+
+Engine lo phần **chạy một mình**; bộ skill lo phần **chất lượng văn Việt**. Gộp lại = "Skill viết sách VN" thực thụ.
 
 ---
 
 ## Mục lục
 
-1. [Tính năng nổi bật](#tính-năng-nổi-bật)
+1. [Tại sao là Omni Suite](#tại-sao-là-omni-suite)
 2. [Kiến trúc](#kiến-trúc)
-3. [Cài đặt](#cài-đặt)
-4. [Sử dụng nhanh](#sử-dụng-nhanh)
-5. [Lớp chất lượng prose Việt](#lớp-chất-lượng-prose-việt)
-6. [Style có sẵn](#style-có-sẵn)
-7. [Cấu hình](#cấu-hình)
-8. [Kiểm thử](#kiểm-thử)
-9. [Cấu trúc thư mục](#cấu-trúc-thư-mục)
-10. [Attribution & License](#attribution--license)
+3. [Bộ skill novel tích hợp](#bộ-skill-novel-tích-hợp)
+4. [Cài đặt](#cài-đặt)
+5. [Sử dụng nhanh](#sử-dụng-nhanh)
+6. [Lớp chất lượng prose Việt](#lớp-chất-lượng-prose-việt)
+7. [Style có sẵn](#style-có-sẵn)
+8. [Cấu hình](#cấu-hình)
+9. [Kiểm thử](#kiểm-thử)
+10. [Cấu trúc thư mục](#cấu-trúc-thư-mục)
+11. [Attribution & License](#attribution--license)
 
 ---
 
-## Tính năng nổi bật
+## Tại sao là Omni Suite
 
-- **Autonomous end-to-end** — 1 prompt → tiểu thuyết hoàn chỉnh, không cần can thiệp thủ công trong quá trình viết.
-- **Multi-agent** — Coordinator điều phối → Architect dựng nền → Writer viết → Editor thẩm định.
-- **Store-first + checkpoint** — mọi trạng thái (premise, outline, cast, world, drafts, summaries) lưu xuống store; dừng/khôi phục bất kỳ lúc nào cho truyện rất dài.
-- **Context compaction** — tự nén ngữ cảnh (ctxpack) để viết hàng trăm chương mà không tràn context.
-- **Cổng chất lượng prose Việt** — chặn cứng em dash, tiếng Anh lọt vào prose tiếng Việt.
-- **30+ rule liền mạch** — kiểm tra continuity (timeline, teleportation, power-jump, vật phẩm, đại từ...).
-- **9 style Việt** — ngôn tình, tiên hiệp, đô thị, trinh thám, cung đấu, fantasy, romance, suspense, default.
-- **Hội đồng Nacharium** — review đa góc nhìn (5 góc nhanh / 13 góc đầy đủ) cho chương then chốt.
-- **EPUB premium** — xuất EPUB dark/bright adaptive + TXT.
-- **Import truyện cũ** — phân tích chương có sẵn → dựng foundation → viết tiếp.
-- **Quan sát & chẩn đoán** — diag/observability tích hợp, theo dõi usage + chi phí token.
+| Khía cạnh | Engine autonomous | Bộ skill chất lượng |
+|-----------|-------------------|---------------------|
+| Bản chất | Cỗ máy chạy thật (binary) | Quy trình + ruleset + prompt |
+| Khởi động → để chạy → lấy output | ✅ mạnh | — |
+| Checkpoint resume cấp tool-call | ✅ | — |
+| Context compaction 4 tầng | ✅ | — |
+| Can thiệp realtime | ✅ | — |
+| Continuity 30+ rule cứng | ✅ (đã nhúng) + 🔧 novel-guardian/novel-master | ✅ |
+| Văn phong Việt + chống AI | ✅ (gate) + 🔧 cw-prose-writing | ✅ |
+| Hội đồng phê bình đa góc | ✅ Nacharium | 🔧 cw-story-critique |
+| Brainstorm / wiki / style guide | — | 🔧 cw-* |
+| EPUB premium | ✅ | 🔧 forge-novel-guard |
+
+→ Không thay thế nhau. **Gộp = cả hai.**
 
 ## Kiến trúc
 
 ```
 ┌─────────────┐   điều phối   ┌─────────────┐
-│ Coordinator │──────────────▶│  Architect  │  dựng premise / outline / cast / world
+│ Coordinator │──────────────▶│  Architect  │  premise / outline / cast / world
 └─────────────┘               └─────────────┘
        │                             │
-       │                             ▼
-       │                       ┌─────────────┐
-       │       viết chương     │   Writer    │  draft → store
-       ├──────────────────────▶└─────────────┘
+       ▼                             ▼
+┌─────────────┐  draft→store  ┌─────────────┐  review/commit/continuity
+│   Writer    │──────────────▶│   Editor    │
+└─────────────┘               └─────────────┘
        │                             │
-       │                             ▼
-       │       thẩm định        ┌─────────────┐
-       └──────────────────────▶│   Editor    │  review / commit / continuity
-                                └─────────────┘
-                                       │
-                          ┌────────────┴────────────┐
-                          ▼                         ▼
-                   Store (checkpoint)        Export (EPUB/TXT)
+       └──────────┬──────────────────┘
+                  ▼
+   ┌──────────────────────────────────┐
+   │  Lớp chất lượng (oumstudio/ + skills/)  │
+   │  prose-verify · Nacharium · 30 rule     │
+   │  cw-* · novel-guardian · novel-master   │
+   └──────────────────────────────────┘
+                  ▼
+        Store (checkpoint) → Export (EPUB/TXT)
 ```
 
-Tham khảo chi tiết: [`docs/architecture.md`](docs/architecture.md), [`docs/context-management.md`](docs/context-management.md), [`docs/observability.md`](docs/observability.md).
+Chi tiết: [`docs/architecture.md`](docs/architecture.md), [`docs/context-management.md`](docs/context-management.md), [`docs/observability.md`](docs/observability.md).
+
+## Bộ skill novel tích hợp
+
+11 skill lõi (engine + lớp prose + 10 skill quy trình) nằm trong [`skills/`](skills/) và [`oumstudio/`](oumstudio/). Xem [`SKILLS.md`](SKILLS.md) cho bản đồ đầy đủ.
+
+| Skill | Vai trò trong pipeline |
+|-------|------------------------|
+| **oumstudio** (engine layer) | Cổng prose 0 em dash/0 tiếng Anh + hội đồng Nacharium |
+| **cw-brainstorming** | PRE-FORGE: outline, beats, character arc |
+| **cw-style-skill-creator** | SETUP: tạo style guide cho project |
+| **cw-prose-writing** | FORGE: viết prose theo style guide |
+| **cw-story-critique** | POST-FORGE: phê bình pacing/nhân vật/thoại |
+| **cw-official-docs** | WIKI: profile nhân vật, lore, địa danh |
+| **cw-router** | DISPATCH: tự chọn skill cho đúng task |
+| **novel-guardian** | SCAN: 10 rule liền mạch (T/C/W/P/V/D), pacing, style |
+| **novel-master** | CHECK: 5 lớp (bible/continuity/prose/pace/voice), 30+ rule |
+| **novelcore-ai** | FORGE-OPT: prompt 4 khối, 3 bản, token budget, context phân vùng |
+| **forge-novel-guard** | VERIFY: prose/epub/send guard (4 script) |
 
 ## Cài đặt
 
 ### Yêu cầu
+- **Go ≥ 1.25** (build engine)
+- **Node.js** (cho novel-guardian / novel-master CLI)
+- **Python 3** (cho verify scripts)
 
-- **Go ≥ 1.25** để build từ source.
-- Một provider LLM (cấu hình trong `~/.ainovel/config.json`).
-
-### Build từ source
-
+### Build engine
 ```bash
 git clone https://github.com/NachaFromMars/oumstudio-novel.git
 cd oumstudio-novel
@@ -82,90 +108,73 @@ go build -o bin/oum-novel ./cmd/ainovel-cli/
 ```
 
 ### Docker
-
 ```bash
 docker compose up --build
 ```
 
 ## Sử dụng nhanh
 
-OUMStudio-Novel chạy ở chế độ **TUI** (terminal UI). Khởi động rồi nhập yêu cầu truyện trong ô nhập liệu:
-
+Chạy TUI:
 ```bash
 ./bin/oum-novel
 ```
-
-Trong TUI:
-- Nhập 1 câu mô tả truyện → engine tự dựng nền và bắt đầu viết.
-- Theo dõi tiến độ realtime, can thiệp qua command palette.
-- Xuất EPUB/TXT khi đã có chương hoàn thành.
-
-> Lưu ý: phiên bản này **không** nhận yêu cầu truyện trực tiếp qua tham số dòng lệnh; phải nhập trong TUI.
+Hoặc headless (non-interactive):
+```bash
+./bin/oum-novel --headless --prompt "Viết truyện tiên hiệp 30 chương về..."
+```
 
 ## Lớp chất lượng prose Việt
 
-Đây là phần OUMStudio bổ sung lên trên engine gốc:
-
-- **`oumstudio/oum-prose-verify.py`** — script kiểm tra prose: phát hiện em dash, tiếng Anh lọt vào, markdown, dấu vết AI; hỗ trợ `--json` và `--strict`.
-
-  ```bash
-  python3 oumstudio/oum-prose-verify.py --strict chuong-01.txt
-  python3 oumstudio/oum-prose-verify.py --json chuong-01.txt
-  ```
-
-- **`oumstudio/nacharium-council.md`** — hội đồng phê bình Nacharium 13 góc (bộ nhanh 5 góc mặc định) để thẩm định sâu chương/bản thảo.
-
-- **30+ rule liền mạch** — nhúng trong `assets/references/continuity-rules-vi.md`.
+```bash
+python3 oumstudio/oum-prose-verify.py --strict chuong-01.txt    # phát hiện em dash, tiếng Anh, markdown, AI trace
+node skills/novel-guardian/scripts/*.mjs                         # scan continuity
+node skills/novel-master/scripts/novel-master.mjs ...            # check 5 lớp
+python3 skills/forge-novel-guard/scripts/master-verify.py ...    # verify trước khi giao
+```
 
 ## Style có sẵn
 
-| Style | File | Mô tả |
-|-------|------|-------|
-| Ngôn tình | `assets/styles/ngon-tinh.md` | Tình cảm, cảm xúc nội tâm |
-| Tiên hiệp | `assets/styles/tien-hiep.md` | Tu tiên, công pháp, cảnh giới |
-| Đô thị | `assets/styles/do-thi.md` | Hiện đại, đời thường |
-| Trinh thám | `assets/styles/trinh-tham.md` | Suy luận, manh mối |
-| Cung đấu | `assets/styles/cung-dau.md` | Hậu cung, mưu lược |
-| Fantasy | `assets/styles/fantasy.md` | Kỳ ảo phương Tây |
-| Romance | `assets/styles/romance.md` | Lãng mạn |
-| Suspense | `assets/styles/suspense.md` | Hồi hộp, căng thẳng |
-| Default | `assets/styles/default.md` | Mặc định |
+| Style | File |
+|-------|------|
+| Ngôn tình | `assets/styles/ngon-tinh.md` |
+| Tiên hiệp | `assets/styles/tien-hiep.md` |
+| Đô thị | `assets/styles/do-thi.md` |
+| Trinh thám | `assets/styles/trinh-tham.md` |
+| Cung đấu | `assets/styles/cung-dau.md` |
+| Fantasy / Romance / Suspense / Default | `assets/styles/*.md` |
 
 ## Cấu hình
 
-Engine đọc cấu hình provider + roles từ `~/.ainovel/config.json`. Xem mẫu trong [`internal/bootstrap/config.example.jsonc`](internal/bootstrap/config.example.jsonc) và [`rules.md.example`](rules.md.example).
+Provider + roles trong `~/.ainovel/config.json`. Mẫu: [`internal/bootstrap/config.example.jsonc`](internal/bootstrap/config.example.jsonc).
 
-> ⚠️ Tránh model bỏ tham số `temperature` (một số proxy báo "temperature deprecated"). Model hỗ trợ `temperature` hoạt động ổn định.
+> ⚠️ Tránh model bỏ tham số `temperature`.
 
 ## Kiểm thử
 
 ```bash
 go test ./...
 ```
-
-Hiện tại: **19 package pass, 0 FAIL**.
+**19 package pass, 0 FAIL.**
 
 ## Cấu trúc thư mục
 
 ```
 .
 ├── cmd/ainovel-cli/      # entry point
-├── internal/             # engine core (agents, host, store, tools, rules, diag, ...)
-├── assets/               # prompts, references, rules, styles (embed)
-├── oumstudio/            # lớp chất lượng prose Việt (verify, council, skill)
-├── docs/                 # architecture, context-management, observability
-├── scripts/              # tiện ích (wordcount, install, media)
-├── Dockerfile
-├── docker-compose.yml
-├── LICENSE               # Apache 2.0
-├── NOTICE                # attribution
+├── internal/             # engine core
+├── assets/               # prompts/references/rules/styles (embed)
+├── oumstudio/            # lớp prose Việt (verify + Nacharium council + SKILL)
+├── skills/               # 10 skill quy trình (cw-*, novel-guardian, novel-master, ...)
+├── docs/                 # architecture, context, observability
+├── SKILLS.md             # bản đồ pipeline skill
+├── LICENSE / NOTICE      # Apache 2.0 + attribution
 └── README.md
 ```
 
 ## Attribution & License
 
-OUMStudio-Novel được phát hành dưới **[Apache License 2.0](LICENSE)**.
+Phát hành dưới **[Apache License 2.0](LICENSE)**.
 
-Engine là một fork phái sinh của [`voocel/ainovel-cli`](https://github.com/voocel/ainovel-cli). Các thông báo bản quyền và attribution gốc được giữ trong file [`NOTICE`](NOTICE) theo yêu cầu của Apache 2.0.
-
-Lớp chất lượng prose tiếng Việt, hội đồng Nacharium, 9 style Việt, và các nâng cấp continuity © Tiểu Tâm × Nấng.
+- Engine là fork phái sinh của [`voocel/ainovel-cli`](https://github.com/voocel/ainovel-cli) — attribution trong [`NOTICE`](NOTICE).
+- `skills/novel-guardian/` giữ LICENSE riêng (MIT, tương thích) của nó.
+- Lớp prose Việt, Nacharium, các style Việt, bộ skill quy trình © Tiểu Tâm × Nấng.
