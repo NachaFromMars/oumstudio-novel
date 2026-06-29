@@ -3,6 +3,22 @@
 Tất cả thay đổi đáng chú ý của dự án được ghi lại ở đây.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/), tuân theo [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-06-29
+
+### Added — Auto-wired skill pipeline (FULL integration)
+- **Post-commit hook**: engine giờ TỰ ĐỘNG chạy toàn bộ skill verify trên MỖI chương ngay sau khi commit.
+- Config mới: `post_commit_hook` + `skills_dir` (bootstrap/config.go).
+- `oumstudio/post-commit-hook.sh`: orchestrator gọi oum-prose-verify + forge-novel-guard + novel-guardian + novel-master → ghi `meta/skill-audit/ch{N}.json` (JSON hợp lệ, Python builder).
+- `Dockerfile.omni`: image FULL (node + python + toàn bộ skill nhúng) để pipeline chạy tự động đầu-cuối trong container.
+- `deploy/`: compose + run.sh dùng image omni.
+- Engine: `CommitChapterTool.WithPostCommitHook()` gọi hook ở cả path chính + rewrite.
+
+### Fixed
+- Ghi nhận: `forge-novel-guard/verify-prose.py` báo nhầm tiếng Việt không dấu là tiếng Anh (regex thô) → hook để "chỉ tham khảo", dùng oum-prose-verify (blacklist chuẩn) làm checker chính.
+
+### Testing
+- 19 package pass, 0 FAIL. Forge thật + hook fire verified (3 truyện: Người Giữ Giờ, gác hải đăng, bán hoa đêm).
+
 ## [1.1.0] - 2026-06-29
 
 ### Added — Omni Novel Suite
