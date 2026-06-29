@@ -38,6 +38,12 @@ type Options struct {
 
 	// Overwrite có ghi đè khi file đã tồn tại không; mặc định từ chối.
 	Overwrite bool
+
+	// AuditGate (OmniNovel): kiểm tra báo cáo skill-audit của các chương TRƯỚC khi xuất.
+	//   - "" hoặc "off": không kiểm (mặc định, tương thích ngược)
+	//   - "warn": đọc meta/skill-audit/ch*.json, gom cảnh báo vào Result.AuditWarnings, VẪN xuất
+	//   - "block": nếu có chương pass_all=false (lỗi prose cứng thật), TỪ CHỐI xuất
+	AuditGate string
 }
 
 // Deps là các phụ thuộc cần thiết cho Run. Chỉ có store; xuất không cần LLM, prompt, bundle.
@@ -55,4 +61,6 @@ type Result struct {
 	Bytes int
 	// Skipped các số chương nằm trong phạm vi yêu cầu nhưng chưa hoàn thành.
 	Skipped []int
+	// AuditWarnings (OmniNovel): tóm tắt cảnh báo từ skill-audit của các chương khi AuditGate bật.
+	AuditWarnings []string
 }
