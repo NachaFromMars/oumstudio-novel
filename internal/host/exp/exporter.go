@@ -114,6 +114,13 @@ func Run(ctx context.Context, deps Deps, opts Options) (*Result, error) {
 		}
 	}
 
+	// OmniNovel: CỔNG KIỂM DUYỆT AUDIT TRƯỚC KHI XUẤT.
+	// Đọc báo cáo skill-audit của các chương sắp xuất; mode="block" sẽ từ chối nếu có lỗi prose cứng thật.
+	auditWarnings, blocked := runAuditGate(deps.Store.Dir(), opts.AuditGate, chapters)
+	if blocked {
+		return nil, fmt.Errorf("xuất bị chặn bởi cổng kiểm duyệt audit: có chương không đạt chuẩn prose. Chi tiết:\n  - %s\n(Dùng --audit-gate=warn để chỉ cảnh báo, hoặc sửa chương rồi commit lại)", joinLines(auditWarnings))
+	}
+
 	titleIdx := buildTitleIndex(outline)
 	var locations map[int]chapterLocation
 	if len(volumes) > 0 {
@@ -137,11 +144,24 @@ func Run(ctx context.Context, deps Deps, opts Options) (*Result, error) {
 	}
 
 	return &Result{
-		Path:     outPath,
-		Chapters: len(chapters),
-		Bytes:    len(data),
-		Skipped:  skipped,
+		Path:          outPath,
+		Chapters:      len(chapters),
+		Bytes:         len(data),
+		Skipped:       skipped,
+		AuditWarnings: auditWarnings,
 	}, nil
+}
+
+// joinLines nối danh sách cảnh báo thành chuỗi nhiều dòng cho thông báo lỗi.
+func joinLines(ss []string) string {
+	out := ""
+	for i, s := range ss {
+		if i > 0 {
+			out += "\n  - "
+		}
+		out += s
+	}
+	return out
 }
 
 // inferFormat suy luận định dạng từ phần mở rộng của đường dẫn đầu ra. Đường dẫn rỗng mặc định về TXT; phần mở rộng không xác định thì báo lỗi (tránh lỗi im lặng).
