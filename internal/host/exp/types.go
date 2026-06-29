@@ -44,6 +44,27 @@ type Options struct {
 	//   - "warn": đọc meta/skill-audit/ch*.json, gom cảnh báo vào Result.AuditWarnings, VẪN xuất
 	//   - "block": nếu có chương pass_all=false (lỗi prose cứng thật), TỪ CHỐI xuất
 	AuditGate string
+
+	// Meta (OmniNovel): metadata sách để dựng front/back matter chuẩn (EPUB). Rỗng = bỏ qua trang tương ứng.
+	Meta BookMeta
+}
+
+// BookMeta chứa metadata để dựng các trang chuẩn của một cuốn sách (front matter + back matter).
+// Mọi trường trống đều bỏ qua trang tương ứng — giữ EPUB gọn khi không có dữ liệu.
+type BookMeta struct {
+	Author      string // Tác giả (vd "Tiểu Tâm")
+	Series      string // Tên bộ sách (vd "Tần Số Nacha")
+	Subtitle    string // Phụ đề (vd "Phần 1")
+	Tagline     string // Tagline/đề từ (vd "Không có hành trình nào là ngẫu nhiên...")
+	Dedication  string // Lời đề tặng
+	Publisher   string // NXB / nhà phát hành
+	Copyright   string // Dòng bản quyền (vd "© 2026 Tiểu Tâm. Mọi quyền được bảo lưu.")
+	Preface     string // Lời nói đầu / lời tựa (Markdown đơn giản: đoạn cách nhau bằng dòng trống)
+	Afterword   string // Lời kết / hậu ký
+	EndOfPart   string // Dòng "Hết Phần N" + teaser phần sau
+	AuthorBio   string // Giới thiệu tác giả
+	SeriesNote  string // Giới thiệu bộ sách
+	CoverImage  string // Đường dẫn file ảnh bìa (png/jpg) để nhúng; rỗng = bìa chữ
 }
 
 // Deps là các phụ thuộc cần thiết cho Run. Chỉ có store; xuất không cần LLM, prompt, bundle.
