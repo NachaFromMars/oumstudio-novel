@@ -45,3 +45,7 @@ Bộ OUMStudio-Novel hợp nhất 1 engine autonomous + lớp prose + 10 skill q
 | 10 | forge-novel-guard | Python verify | `skills/forge-novel-guard/` |
 
 Mỗi skill có `SKILL.md` riêng mô tả chi tiết cách dùng.
+
+### Skill scripts (v1.6.0)
+
+7 script heuristics mới được wire vào post-commit hook — chạy kiểm tra thật thay vì chỉ prompt: `cw-brainstorming/scripts/tbd-scan.py`, `cw-style-skill-creator/scripts/style-fingerprint.py`, `cw-prose-writing/scripts/prose-metrics.py`, `cw-story-critique/scripts/critique-heuristics.py`, `cw-official-docs/scripts/wiki-extract.py`, `cw-router/scripts/route-check.py`, `novelcore-ai/scripts/novelcore-check.py`.

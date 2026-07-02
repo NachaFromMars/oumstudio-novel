@@ -77,7 +77,12 @@ func (t *CommitChapterTool) WithPostCommitHook(hookPath, skillsDir, outputDir st
 	return t
 }
 
-// runPostCommitHook chạy hook OmniNovel sau commit. Best-effort: lỗi chỉ log, không phá pipeline.
+// runPostCommitHook chạy hook OmniNovel sau commit, rồi đóng vòng audit-feedback:
+// đọc report meta/skill-audit/chNN.json do hook sinh ra; nếu pass_all=false thì tự đưa chương
+// vào hàng đợi viết lại (EnqueueRewrite) — không chỉ ghi log. Mỗi chương chỉ bị tự đưa vào
+// hàng đợi đúng MỘT lần (marker meta/skill-audit/chNN.enqueued) để chặn vòng lặp vô hạn
+// commit→fail→rewrite→commit→fail. Bản thân hook vẫn best-effort: hook lỗi/thiếu report
+// không phá pipeline.
 func (t *CommitChapterTool) runPostCommitHook(chapter int) {
 	if t.postCommitHook == "" {
 		return
@@ -102,6 +107,52 @@ func (t *CommitChapterTool) runPostCommitHook(chapter int) {
 		return
 	}
 	slog.Info("post-commit hook xong", "module", "omni-hook", "chapter", chapter, "output", strings.TrimSpace(string(output)))
+
+	t.applyAuditFeedback(chapter, outDir)
+}
+
+// auditReport là phần tối thiểu của meta/skill-audit/chNN.json mà feedback-loop cần.
+type auditReport struct {
+	Chapter int  `json:"chapter"`
+	PassAll bool `json:"pass_all"`
+}
+
+// applyAuditFeedback đọc report audit của chương và đóng vòng phản hồi:
+// pass_all=false → EnqueueRewrite. Marker file chặn tái-enqueue lần hai.
+func (t *CommitChapterTool) applyAuditFeedback(chapter int, outDir string) {
+	reportPath := filepath.Join(outDir, "meta", "skill-audit", fmt.Sprintf("ch%02d.json", chapter))
+	data, err := os.ReadFile(reportPath)
+	if err != nil {
+		// Không có report = hook không sinh được — không suy diễn gì thêm.
+		return
+	}
+	var rep auditReport
+	if err := json.Unmarshal(data, &rep); err != nil {
+		slog.Warn("audit report không parse được (bỏ qua)", "module", "omni-hook", "chapter", chapter, "err", err)
+		return
+	}
+	if rep.PassAll {
+		return
+	}
+
+	// Chống lặp vô hạn: mỗi chương chỉ tự enqueue đúng một lần. Lần commit sau khi viết lại
+	// nếu vẫn fail thì chỉ log — để editor/người dùng phán quyết, không xử tự động nữa.
+	markerPath := filepath.Join(outDir, "meta", "skill-audit", fmt.Sprintf("ch%02d.enqueued", chapter))
+	if _, err := os.Stat(markerPath); err == nil {
+		slog.Warn("audit vẫn fail sau khi đã viết lại một lần — không tự enqueue nữa, cần editor/người dùng xử lý",
+			"module", "omni-hook", "chapter", chapter, "report", reportPath)
+		return
+	}
+
+	reason := fmt.Sprintf("skill-audit fail (ch%02d): xem %s", chapter, reportPath)
+	if err := t.store.Progress.EnqueueRewrite(chapter, reason); err != nil {
+		slog.Warn("không đưa được chương vào hàng đợi viết lại (không chặn)", "module", "omni-hook", "chapter", chapter, "err", err)
+		return
+	}
+	if err := os.WriteFile(markerPath, []byte(time.Now().Format(time.RFC3339)+"\n"), 0o644); err != nil {
+		slog.Warn("không ghi được marker enqueue (nguy cơ lặp nếu lần sau vẫn fail)", "module", "omni-hook", "chapter", chapter, "err", err)
+	}
+	slog.Info("audit-feedback: chương fail audit đã vào hàng đợi viết lại", "module", "omni-hook", "chapter", chapter, "reason", reason)
 }
 
 // commitOutput nhúng thêm trường mở rộng lên trên domain.CommitResult, giữ package domain không phụ thuộc rules.

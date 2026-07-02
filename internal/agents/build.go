@@ -124,6 +124,7 @@ func BuildCoordinator(
 		readChapter,
 		tools.NewPlanChapterTool(store),
 		tools.NewDraftChapterTool(store),
+		tools.NewDraftBeatTool(store),
 		tools.NewEditChapterTool(store),
 		tools.NewCheckConsistencyTool(store),
 		tools.NewCommitChapterTool(store).WithRules(rulesOpts).WithPostCommitHook(cfg.PostCommitHook, cfg.SkillsDir, cfg.OutputDir),

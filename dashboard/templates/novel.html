@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{if .Job}}<meta http-equiv="refresh" content="20">{{end}}
+<title>{{.Title}} — OmniNovel</title>
+<style>
+  :root { --bg:#F5F0EB; --accent:#C9A96E; --accent-2:#a07f3f; --ink:#2C2C2C; --line:#e5ddd2; --muted:#8d8577; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans","Liberation Sans",sans-serif;
+    line-height:1.6; padding:2rem 1rem; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  a { color:var(--accent-2); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  header { border-bottom:3px solid var(--accent); padding-bottom:1rem; margin-bottom:1.6rem; }
+  h1 { font-size:1.7rem; }
+  .crumb { font-size:.85rem; color:var(--muted); margin-bottom:.4rem; }
+  .genres { margin-top:.4rem; }
+  .genres b { display:inline-block; background:#f0e8db; color:#7a6a4e; font-weight:500;
+    border-radius:10px; padding:0 .6rem; font-size:.78rem; margin-right:.3rem; }
+  .flash { padding:.7rem 1rem; border-radius:8px; margin-bottom:1.2rem; font-size:.92rem; }
+  .flash.ok { background:#e4eede; color:#3c5a2e; border:1px solid #bed3ae; }
+  .flash.err { background:#f7e2dc; color:#8b3a26; border:1px solid #e3b8ab; }
+  .genbox { background:#eef3ea; border:1px solid #cfe0c6; border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.4rem; }
+  .genbox b { color:#3c5a2e; }
+  .meta { display:flex; flex-wrap:wrap; gap:.8rem 2rem; margin:1rem 0 2rem; }
+  .meta .item { background:#fff; border:1px solid var(--line); border-radius:8px; padding:.6rem 1rem; min-width:130px; }
+  .meta .k { display:block; font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .meta .v { font-size:1.1rem; font-weight:600; }
+  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius:12px; padding:.05rem .6rem; font-size:.78rem; }
+  .badge.warn { background:#b0653a; }
+  .badge.gray { background:var(--muted); }
+  .badge.ok { background:#5d8a4e; }
+  .badge.fail { background:#a33e3e; }
+  h2 { font-size:1.2rem; margin:1.6rem 0 .8rem; border-left:4px solid var(--accent); padding-left:.6rem; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden; font-size:.9rem; }
+  th, td { padding:.5rem .7rem; text-align:left; border-bottom:1px solid #ece5da; vertical-align:top; }
+  th { background:#efe7db; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; color:#5c554a; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#faf6f0; }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .scores { font-size:.8rem; color:#5c554a; }
+  .scores b { color:var(--ink); }
+  .skilllist { font-size:.78rem; }
+  .skilllist .s { display:inline-block; margin:.1rem .25rem .1rem 0; padding:.02rem .45rem; border-radius:10px; background:#e7f0e2; color:#3d6631; }
+  .skilllist .s.f { background:#f4dede; color:#8c2f2f; }
+  .note { color:var(--muted); font-size:.85rem; }
+  .export { background:#fff; border:1px solid var(--line); border-radius:12px; padding:1.4rem; }
+  .export .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.9rem; }
+  .export label { display:block; font-weight:600; font-size:.85rem; margin-bottom:.2rem; }
+  .export input, .export select, .export textarea { width:100%; padding:.5rem .7rem; border:1px solid #d8cfc2;
+    border-radius:8px; background:#fdfbf8; font-size:.9rem; font-family:inherit; }
+  .export textarea { min-height:70px; resize:vertical; }
+  .export .full { grid-column:1 / -1; }
+  .export .actions { margin-top:1.1rem; text-align:center; }
+  .export button { background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:.7rem 2.2rem; font-size:1rem; font-weight:600; cursor:pointer; }
+  .export button:hover { opacity:.9; }
+  .exports li { margin:.25rem 0; }
+  footer { margin-top:3rem; text-align:center; color:var(--muted); font-size:.8rem; }
+  @media (max-width:640px){ body{padding:1rem .5rem;} table{font-size:.78rem;} th,td{padding:.35rem .4rem;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="crumb"><a href="/">← Thư viện</a> · <a href="/jobs">Tiến trình</a></div>
+    <h1>{{.Title}}</h1>
+    {{if .Book.Genres}}<div class="genres">{{range .Book.Genres}}<b>{{.}}</b>{{end}}{{if .Book.Author}} <span class="note">· {{.Book.Author}}</span>{{end}}{{if .Book.Series}} <span class="note">· {{.Book.Series}}</span>{{end}}</div>{{end}}
+  </header>
+
+  {{if .Flash.Msg}}<div class="flash ok">✅ {{.Flash.Msg}}</div>{{end}}
+  {{if .Flash.Err}}<div class="flash err">⚠️ {{.Flash.Err}}</div>{{end}}
+
+  {{if .Job}}
+  <div class="genbox">🖋 <b>Đang viết…</b> engine chạy nền (bắt đầu {{.Job.StartedAt.Format "15:04 02/01"}}) —
+    <a href="/jobs/{{.Job.ID}}/log" target="_blank">xem log</a>. Trang tự làm mới mỗi 20 giây.</div>
+  {{end}}
+
+  <div class="meta">
+    <div class="item"><span class="k">Trạng thái</span><span class="v">{{if .Job}}ĐANG VIẾT{{else if .Status}}{{.Status}}{{else}}—{{end}}</span></div>
+    {{if .Phase}}<div class="item"><span class="k">Phase</span><span class="v">{{.Phase}}</span></div>{{end}}
+    {{if .Flow}}<div class="item"><span class="k">Flow</span><span class="v">{{.Flow}}</span></div>{{end}}
+    <div class="item"><span class="k">Chương</span><span class="v">{{.CompletedChapters}} / {{.TotalChapters}}</span></div>
+    <div class="item"><span class="k">Tổng từ</span><span class="v">{{.TotalWords}}</span></div>
+    <div class="item"><span class="k">Chờ viết lại</span><span class="v">{{.PendingRewrites}}</span></div>
+    {{if .CurrentVolume}}<div class="item"><span class="k">Volume</span><span class="v">{{.CurrentVolume}}</span></div>{{end}}
+    {{if .CurrentArc}}<div class="item"><span class="k">Arc</span><span class="v">{{.CurrentArc}}</span></div>{{end}}
+  </div>
+
+  {{if .PendingRewrite}}
+  <h2>Chờ viết lại</h2>
+  <p class="note">{{range $i, $p := .PendingRewrite}}{{if $i}}, {{end}}{{$p}}{{end}}</p>
+  {{end}}
+
+  <h2>Danh sách chương</h2>
+  {{if .Chapters}}
+  <table>
+    <thead>
+      <tr><th>Ch.</th><th>Tiêu đề / dòng đầu</th><th class="num">Số từ</th><th>Trạng thái</th><th>Review 7 chiều</th><th>Skill-audit</th><th></th></tr>
+    </thead>
+    <tbody>
+      {{range .Chapters}}
+      <tr>
+        <td class="num">{{.Number}}</td>
+        <td>{{if .Title}}{{.Title}}{{else}}<span class="note">{{.File}}</span>{{end}}</td>
+        <td class="num">{{.Words}}</td>
+        <td>
+          {{if eq .Status "hoàn thành"}}<span class="badge ok">hoàn thành</span>
+          {{else if eq .Status "cần viết lại"}}<span class="badge warn">cần viết lại</span>
+          {{else}}<span class="badge gray">{{.Status}}</span>{{end}}
+        </td>
+        <td>
+          {{if .Review.Found}}
+            <div class="scores"><b>TB {{.Review.Average}}</b>{{if .Review.Verdict}} · {{.Review.Verdict}}{{end}}</div>
+            <div class="scores">{{range $k, $v := .Review.Scores}}{{$k}}: <b>{{$v}}</b> · {{end}}</div>
+          {{else}}<span class="note">chưa có</span>{{end}}
+        </td>
+        <td>
+          {{if .Audit.Found}}
+            {{if .Audit.PassAll}}{{if deref .Audit.PassAll}}<span class="badge ok">PASS ALL</span>{{else}}<span class="badge fail">FAIL</span>{{end}}{{end}}
+            <div class="skilllist">{{range $k, $v := .Audit.Skills}}<span class="s{{if not $v}} f{{end}}">{{$k}}</span>{{end}}</div>
+          {{else}}<span class="note">chưa có</span>{{end}}
+        </td>
+        <td><a href="/novel/{{$.Slug}}/chapter/{{.Number}}">Đọc</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="note">Chưa có chương nào{{if .Job}} — engine đang viết, chương đầu sẽ xuất hiện ở đây{{end}}.</p>
+  {{end}}
+
+  <h2>Xuất EPUB</h2>
+  <div class="export">
+    <form method="post" action="/novel/{{.Slug}}/export">
+      <div class="grid">
+        <div><label>Từ chương</label><input type="number" name="from" min="0" placeholder="đầu"></div>
+        <div><label>Đến chương</label><input type="number" name="to" min="0" placeholder="cuối"></div>
+        <div><label>Audit gate</label>
+          <select name="audit_gate">
+            <option value="off">off — xuất thẳng</option>
+            <option value="warn" selected>warn — cảnh báo vẫn xuất</option>
+            <option value="block">block — chặn nếu fail</option>
+          </select>
+        </div>
+        <div><label>Tác giả</label><input type="text" name="author" value="{{.Book.Author}}" placeholder="Tiểu Tâm"></div>
+        <div><label>Bộ sách</label><input type="text" name="series" value="{{.Book.Series}}"></div>
+        <div><label>Phụ đề</label><input type="text" name="subtitle"></div>
+        <div class="full"><label>Lời tựa <span class="note">— tùy chọn, thành trang riêng trong EPUB</span></label>
+          <textarea name="preface"></textarea></div>
+        <div class="full"><label>Lời bạt <span class="note">— tùy chọn</span></label>
+          <textarea name="afterword"></textarea></div>
+      </div>
+      <div class="actions"><button type="submit">📖 Xuất EPUB</button>
+        <div class="note" style="margin-top:.5rem">EPUB 3 đầy đủ: bìa, trang tựa, bản quyền, lời tựa, mục lục, chương, lời bạt, về tác giả (trang thiếu dữ liệu tự bỏ qua). Cần đăng nhập admin.</div>
+      </div>
+    </form>
+    {{if .Exports}}
+    <h2 style="margin-top:1.4rem">File đã xuất</h2>
+    <ul class="exports">
+      {{range .Exports}}<li>📕 <a href="/download/{{$.Slug}}/{{.}}">{{.}}</a></li>{{end}}
+    </ul>
+    {{end}}
+  </div>
+
+  <footer>OmniNovel · <a href="/api/novels/{{.Slug}}">JSON API</a></footer>
+</div>
+</body>
+</html>

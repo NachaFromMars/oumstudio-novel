@@ -529,6 +529,53 @@ Xem chi tiết trong thư mục [`docs/`](docs/):
 
 ---
 
+## Web App (dashboard/)
+
+OmniNovel Web App — giao diện web quản trị trọn vòng đời truyện, nằm trong thư mục `dashboard/` (Go module riêng `omni-dashboard`):
+
+- **Create novel + Settings đa provider:** Claude (Anthropic) + GPT (OpenAI) + custom OpenAI-compatible endpoint, lưu cấu hình per-provider.
+- **Jobs + AUTO mode vô cực:** tự đề tài → seed → viết → audit → export, chạy liên tục không cần can thiệp.
+- **Seedcraft mastery engine** (`dashboard/seedcraft/`): sinh seed truyện có cấu trúc + chấm điểm chống nhạt; **seed registry** chống trùng đề tài giữa các lần AUTO.
+- **Album library:** duyệt truyện đã hoàn thành, đọc chương, tải EPUB ngay từ UI.
+- **Basic Auth** bảo vệ toàn bộ app; `verify-endpoints.sh` smoke test endpoints.
+
+Build & chạy:
+
+```bash
+cd dashboard
+go build -o omni-dashboard .
+./omni-dashboard   # mặc định lắng nghe :8787 (xem main.go / biến môi trường)
+```
+
+Chạy nền bằng systemd (ví dụ):
+
+```ini
+[Unit]
+Description=OmniNovel Dashboard
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/oumstudio-novel/dashboard
+ExecStart=/opt/oumstudio-novel/dashboard/omni-dashboard
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+## Truyện mẫu (novels/)
+
+Thư mục `novels/` chứa 2 truyện hoàn chỉnh do chính pipeline này viết:
+
+- **Vua Đường Ngoại Truyện** (`novels/vua-duong-ngoai-truyen/`) — 21 chương, ~59.000 từ, hoàn chỉnh từ seed đến EPUB.
+- **Trọng Sinh** (`novels/trong-sinh/`) — truyện mẫu minh hoạ cấu trúc output.
+
+Xem `novels/README.md` để biết chi tiết.
+
+---
+
 ## Công nghệ
 
 - **Go 1.25** — Ngôn ngữ chính

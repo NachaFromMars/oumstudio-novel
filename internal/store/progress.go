@@ -330,6 +330,42 @@ func (s *ProgressStore) SetPendingRewrites(chapters []int, reason string) error 
 	})
 }
 
+// EnqueueRewrite (OmniNovel audit-feedback-loop) thêm một chương vào hàng đợi viết lại
+// mà KHÔNG xóa các chương đang chờ sẵn (khác SetPendingRewrites vốn thay toàn bộ hàng đợi).
+// Dùng khi audit sau commit phát hiện chương không đạt: đưa chương vào hàng đợi + chuyển flow
+// sang rewriting để writer xử lý ở lượt kế, thay vì chỉ ghi log rồi đi tiếp.
+// Chương đã có trong hàng đợi thì không thêm lại (idempotent). Lý do được nối thêm vào RewriteReason.
+func (s *ProgressStore) EnqueueRewrite(chapter int, reason string) error {
+	return s.io.WithWriteLock(func() error {
+		p, err := s.loadUnlocked()
+		if err != nil {
+			return err
+		}
+		if p == nil {
+			return nil
+		}
+		if slices.Contains(p.PendingRewrites, chapter) {
+			return nil
+		}
+		merged := append(append([]int{}, p.PendingRewrites...), chapter)
+		normalized, err := normalizePendingRewrites(merged, p.CompletedChapters)
+		if err != nil {
+			return err
+		}
+		if err := domain.ValidateFlowTransition(p.Flow, domain.FlowRewriting); err != nil {
+			return err
+		}
+		p.PendingRewrites = normalized
+		if p.RewriteReason == "" {
+			p.RewriteReason = reason
+		} else if reason != "" {
+			p.RewriteReason = p.RewriteReason + "; " + reason
+		}
+		p.Flow = domain.FlowRewriting
+		return s.saveUnlocked(p)
+	})
+}
+
 // ValidatePendingRewrites kiểm tra danh sách chương có thể vào hàng đợi chỉnh sửa hay không, không thay đổi trạng thái.
 func (s *ProgressStore) ValidatePendingRewrites(chapters []int) error {
 	s.io.mu.RLock()

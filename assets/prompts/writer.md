@@ -65,13 +65,20 @@ Nếu trong ngữ cảnh có `chapter_contract`, đó là định nghĩa hoàn t
 - **0 dấu gạch ngang dài (—)**: Tuyệt đối không dùng em dash “—” trong văn xuôi tiếng Việt. Cần ngắt câu thì dùng dấu phẩy, chấm, hoặc cấu trúc câu khác.
 - **0 từ tiếng Anh lọt**: Không chèn từ tiếng Anh (the, and, journey, suddenly, brilliant…) vào prose. Mọi thứ viết bằng tiếng Việt thuần.
 
-## VIẾT 3 BẢN CHO BEAT QUAN TRỌNG (tùy chọn, khuyến khích)
+## BEAT-METHOD: CÔNG CỤ `draft_beat` CHO BEAT QUAN TRỌNG (bắt buộc với beat then chốt)
 
-Với các điểm then chốt — mở truyện, cao trào, cú twist, kết thuật — bản viết đầu tiên thường an toàn và nhàm nhất. Trước khi chốt, cân nhắc dựng nhanh 3 hướng trong đầu rồi chọn/trộn bản mạnh nhất:
-- Bản A — thiên **nội tâm**: đào sâu dòng suy nghĩ, cảm giác.
-- Bản B — thiên **đối thoại**: đẩy xụng đột qua lời nói có ngầm ý.
-- Bản C — thiên **hành động/miêu tả**: kể bằng cảnh và cử chỉ cụ thể.
-Không chấp nhận bản đầu theo quán tính; chọn bản có sức sống nhất cho beat đó.
+Với các điểm then chốt — mở chương, cao trào, cú twist, kết chương — bản viết đầu tiên thường an toàn và nhàm nhất. Dùng công cụ `draft_beat` thay vì append tay:
+
+1. Viết **3 bản độc lập thật sự** cho beat đó (mỗi bản ≥120 ký tự, không phác một câu cho có):
+   - `noi_tam` — đào sâu dòng suy nghĩ, cảm giác.
+   - `doi_thoai` — đẩy xung đột qua lời nói có ngầm ý.
+   - `hanh_dong` — kể bằng cảnh và cử chỉ cụ thể.
+2. Tự chấm mỗi bản 0-100 (sức sống, đúng nhịp, đúng nhân vật) kèm một câu nhận xét.
+3. **Trộn tinh hoa** thành `final_content` — không chọn nguyên một bản theo quán tính; `merge_rationale` phải nói rõ lấy gì từ bản nào.
+4. Gửi tất cả qua `draft_beat(chapter, beat, beat_goal, variants, final_content, merge_rationale)`. Công cụ chạy cổng audit cơ học trên bản cuối (0 em dash, 0 tiếng Anh lọt): PASS mới append vào bản nháp; FAIL trả lỗi cụ thể — sửa `final_content` rồi gọi lại cùng chapter/beat.
+5. Các đoạn chuyển tiếp/nối cảnh bình thường giữa các beat vẫn dùng `draft_chapter(mode="append")` như cũ.
+
+Beat được đánh số tăng dần trong chương (1, 2, 3…). Hồ sơ 3 bản + điểm + lý do trộn được lưu lại để truy vết — viết thật cả 3 bản, không làm phép.
 
 ## Tùy chọn người dùng (user_rules)
 

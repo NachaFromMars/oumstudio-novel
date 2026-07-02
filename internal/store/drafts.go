@@ -55,6 +55,17 @@ func (s *DraftStore) AppendDraft(chapter int, content string) error {
 	})
 }
 
+// SaveBeatRecord (OmniNovel beat-method) lưu hồ sơ truy vết một beat (3 bản + điểm + bản trộn)
+// vào drafts/{ch}.beat-{beat}.json. rec là any để store không phụ thuộc kiểu của tầng tools.
+func (s *DraftStore) SaveBeatRecord(chapter, beat int, rec any) error {
+	return s.io.WriteJSON(fmt.Sprintf("drafts/%02d.beat-%02d.json", chapter, beat), rec)
+}
+
+// LoadBeatRecordRaw đọc hồ sơ beat dạng bytes thô (dùng cho kiểm tra/truy vết; caller tự unmarshal).
+func (s *DraftStore) LoadBeatRecordRaw(chapter, beat int) ([]byte, error) {
+	return s.io.ReadFile(fmt.Sprintf("drafts/%02d.beat-%02d.json", chapter, beat))
+}
+
 // LoadDraft đọc toàn bộ bản nháp chương.
 func (s *DraftStore) LoadDraft(chapter int) (string, error) {
 	data, err := s.io.ReadFile(fmt.Sprintf("drafts/%02d.draft.md", chapter))

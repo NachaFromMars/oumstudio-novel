@@ -3,6 +3,26 @@
 Tất cả thay đổi đáng chú ý của dự án được ghi lại ở đây.
 Định dạng dựa trên [Keep a Changelog](https://keepachangelog.com/), tuân theo [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-07-03
+
+### Added
+- **draft_beat (beat-method):** tool mới cho Writer — mỗi beat viết ĐÚNG 3 bản độc lập (noi_tam / doi_thoai / hanh_dong), tự chấm điểm 0-100, rồi trộn tinh hoa thành `final_content` kèm `merge_rationale`; gate kiểm tra đủ 3 hướng trước khi nhận.
+- **Audit-feedback-loop:** kết quả audit chương tự động enqueue rewrite vào hàng đợi (`rewrite_queue`) — chương yếu được viết lại không cần can thiệp tay; kèm test (`audit_feedback_test.go`, `rewrite_queue_test.go`).
+- **7 skill scripts** wire vào post-commit hook: `tbd-scan.py`, `style-fingerprint.py`, `prose-metrics.py`, `critique-heuristics.py`, `wiki-extract.py`, `route-check.py`, `novelcore-check.py` — chạy heuristics thật thay vì chỉ prompt.
+- **OmniNovel Web App (`dashboard/`):** web UI quản trị trọn vòng đời truyện:
+  - Create novel + settings đa provider (Claude + GPT / OpenAI-compatible custom), lưu cấu hình per-provider.
+  - Jobs runner + **AUTO mode vô cực**: tự đề tài → seed → viết → audit → export không dừng.
+  - **Seedcraft mastery engine** (`seedcraft/`): sinh seed truyện có cấu trúc, chấm điểm, chống nhạt.
+  - **Seed registry** (`seedreg.go`) chống trùng đề tài giữa các lần AUTO.
+  - **Album library** (`library.go`): duyệt truyện đã hoàn thành, đọc chương, tải EPUB.
+  - Export EPUB từ UI + Basic Auth bảo vệ toàn bộ app + `verify-endpoints.sh` smoke test.
+
+### Fixed
+- **draft_beat strict schema bug:** property `note` trong variant schema thiếu `Required()` → OpenAI strict tool calling từ chối schema. Đã đánh dấu required (cho phép chuỗi rỗng) để tương thích strict mode.
+
+### Docs
+- `novels/README.md` + 2 truyện hoàn chỉnh trong `novels/`: **Vua Đường Ngoại Truyện** (21 chương, ~59k từ) và **Trọng Sinh** (mẫu).
+
 ## [1.5.0] - 2026-06-29
 
 ### Added — Front/Back matter chuẩn cho EPUB
